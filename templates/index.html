@@ -3,52 +3,188 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PocketCFO</title>
+    <title>PocketCFO - SME Strategist</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
 </head>
 <body>
 
-    <div class="chat-container">
-        <!-- Header -->
-        <div class="chat-header">
-            <div class="user-info">
-                <div class="avatar">
-                    <i class="fa-solid fa-robot fa-xl"></i>
-                    <span class="status-dot"></span>
+    <div class="main-container">
+        <div class="dashboard-container">
+            
+            <div class="company-profile">
+                <div class="company-icon">
+                    <i class="fa-solid fa-building"></i>
                 </div>
-                <div>
-                    <h4>E-invoice Assistant</h4>
-                    <p>Always active</p>
+                <div class="company-details">
+                    <h4>Warung Pixel Sdn Bhd</h4>
+                    <p>SST: W10-1234-56789012</p>
                 </div>
             </div>
-           
+
+            <div class="widget compliance-widget">
+                <div class="compliance-circle" id="compliance-circle">
+                    <div class="compliance-inner">
+                        <span class="score" id="dash-compliance">94</span>
+                        <span class="label">COMPLIANCE</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="widget tax-widget">
+                <p class="widget-title"><i class="fa-solid fa-scale-balanced"></i> TAX BRACKET</p>
+                
+                <div class="tax-bar-container">
+                    <div class="tax-progress" id="tax-progress-bar"></div>
+                    <div class="tax-markers">
+                        <div class="marker" id="tax-marker-15">
+                            <span class="pct">15%</span>
+                            <span class="range">&le;150k</span>
+                        </div>
+                        <div class="marker active" id="tax-marker-17">
+                            <span class="pct">17%</span>
+                            <span class="range">150-600k</span>
+                        </div>
+                        <div class="marker" id="tax-marker-24">
+                            <span class="pct">24%</span>
+                            <span class="range">&gt;600k</span>
+                        </div>
+                    </div>
+                </div>
+                <p class="tax-subtitle">
+                    <span class="highlight" id="dash-tax-until">RM80,000</span> until next bracket
+                </p>
+            </div>
+            
+            <div class="widget mtd-widget">
+                <p class="widget-title">MONTH-TO-DATE</p>
+                
+                <div class="mtd-list">
+                    <div class="mtd-item">
+                        <span class="mtd-label"><i class="fa-solid fa-arrow-trend-up"></i> Revenue</span>
+                        <span class="mtd-value text-green" id="dash-revenue">RM48,200</span>
+                    </div>
+                    <div class="mtd-item">
+                        <span class="mtd-label"><i class="fa-solid fa-file-invoice"></i> Expenses</span>
+                        <span class="mtd-value text-orange" id="dash-expenses">RM38,500</span>
+                    </div>
+                    <div class="mtd-item">
+                        <span class="mtd-label"><i class="fa-regular fa-clock"></i> Pending</span>
+                        <span class="mtd-value" id="dash-pending">3 invoices</span>
+                    </div>
+                    <div class="mtd-item">
+                        <span class="mtd-label"><i class="fa-solid fa-droplet"></i> Liquidity</span>
+                        <span class="mtd-value text-blue" id="dash-liquidity">1.8x</span>
+                    </div>
+                </div>
+            </div>
+
         </div>
 
-        <!-- Messages Area -->
-        <div class="chat-messages" id="chat-messages">
-            <div class="message bot">
-                <div class="bubble">
-                    Hello! I'm your AI assistant. How can I help you today?
+        <div class="chat-container">
+            <div class="chat-header">
+                <div class="user-info">
+                    <div class="avatar">
+                        <i class="fa-solid fa-robot fa-xl" style="color: white;"></i>
+                        <span class="status-dot"></span>
+                    </div>
+                    <div>
+                        <h4>Financial Strategist</h4>
+                        <p>Always active</p>
+                    </div>
                 </div>
-                <span class="timestamp">12:00 PM</span>
+            </div>
+
+            <div class="chat-messages" id="chat-messages">
+                <div class="message bot">
+                    <div class="bubble">
+                        Hello there! I've analyzed your cashflow for this month. Please upload any new receipts or ask me before making large purchases.
+                    </div>
+                    <span class="timestamp">12:00 PM</span>
+                </div>
+            </div>
+
+            <div class="typing-indicator" id="typing-indicator">
+                <span></span><span></span><span></span>
+            </div>
+
+            <form class="chat-input" id="chat-form">
+                <button type="button" class="upload-btn">
+                    <i class="fa-solid fa-paperclip"></i>                
+                </button>
+                <input type="text" id="user-input" placeholder="Type a message or upload..." autocomplete="off">
+                <button type="submit" class="send-btn">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </form> 
+        </div>
+        <div class="graph-container">
+            <div class="graph-header">
+                <h3>NEURAL DECISION GRAPH</h3>
+            </div>
+            
+            <div class="graph-flow">
+                <div class="graph-col col-inputs">
+                    <div class="graph-card input-card">
+                        <div class="card-icon"><i class="fa-solid fa-receipt"></i></div>
+                        <div class="card-info">
+                            <p class="label">INPUT</p>
+                            <h4>IKEA Receipt</h4>
+                            <p class="value">RM7,850.00</p>
+                        </div>
+                        <div class="connector-dot right"></div>
+                    </div>
+                    <div class="graph-card input-card">
+                        <div class="card-icon"><i class="fa-solid fa-file-invoice"></i></div>
+                        <div class="card-info">
+                            <p class="label">INPUT</p>
+                            <h4>Pelita Invoice</h4>
+                            <p class="value">RM485.60</p>
+                        </div>
+                        <div class="connector-dot right"></div>
+                    </div>
+                    <div class="graph-card input-card">
+                        <div class="card-icon"><i class="fa-solid fa-laptop"></i></div>
+                        <div class="card-info">
+                            <p class="label">INPUT</p>
+                            <h4>Dell Purchase</h4>
+                            <p class="value">RM12,500.00</p>
+                        </div>
+                        <div class="connector-dot right"></div>
+                    </div>
+                </div>
+
+                <div class="graph-col col-engine">
+                    <div class="engine-node">
+                        <div class="connector-dot left"></div>
+                        <i class="fa-solid fa-brain"></i>
+                        <div class="connector-dot right"></div>
+                    </div>
+                    <p class="engine-label">POCKETCFO ENGINE</p>
+                </div>
+
+                <div class="graph-col col-outcomes">
+                    <div class="graph-card outcome-card rejected">
+                        <div class="connector-dot left"></div>
+                        <div class="outcome-header"><i class="fa-solid fa-circle-xmark"></i> REJECTED</div>
+                        <h4>Request TIN from Pelita</h4>
+                        <p>LHDN non-compliant — RM20k penalty risk</p>
+                    </div>
+                    <div class="graph-card outcome-card approved">
+                        <div class="connector-dot left"></div>
+                        <div class="outcome-header"><i class="fa-solid fa-circle-check"></i> APPROVED</div>
+                        <h4>Reclassify as Capital Allowance</h4>
+                        <p>Save RM1,884 in current FY</p>
+                    </div>
+                    <div class="graph-card outcome-card pending">
+                        <div class="connector-dot left"></div>
+                        <div class="outcome-header"><i class="fa-solid fa-clock"></i> PENDING</div>
+                        <h4>Delay purchase to May</h4>
+                        <p>Avoid 24% bracket, preserve liquidity</p>
+                    </div>
+                </div>
             </div>
         </div>
-
-        <div class="typing-indicator" id="typing-indicator">
-            <span></span><span></span><span></span>
-        </div>
-
-        <!-- Input Area-->
-        <form class="chat-input" id="chat-form">
-            <button type="upload">
-                <i class="fa-solid fa-upload"></i>                
-            </button>
-            <input type="text" id="user-input" placeholder="Type a message..." autocomplete="off">
-            <button type="submit">
-                <i class="fas fa-paper-plane"></i>
-            </button>
-        </form>
     </div>
 
     <script src="{{ url_for('static', filename='js/script.js') }}"></script>
