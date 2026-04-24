@@ -69,8 +69,8 @@ body {
     border: 2px solid white;
     border-radius: 50%;
     position: absolute;
-    bottom: 2px;
-    right: 2px;
+    bottom: -5px;
+    right: -2px;
 }
 
 .user-info h4 { font-size: 1rem; color: white; }
