@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PocketCFO</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+    <div class="chat-container">
+        <!-- Header -->
+        <div class="chat-header">
+            <div class="user-info">
+                <div class="avatar">
+                    <img src="{{ url_for('static',filename='images/avatar.png')}}"alt="PocketCFO">
+                    <span class="status-dot"></span>
+                </div>
+                <div>
+                    <h4>E-invoice Assistant</h4>
+                    <p>Always active</p>
+                </div>
+            </div>
+            <div class="header-actions">
+                <i class="fas fa-ellipsis-v"></i>
+            </div>
+        </div>
+
+        <!-- Messages Area -->
+        <div class="chat-messages" id="chat-messages">
+            <div class="message bot">
+                <div class="bubble">
+                    Hello! I'm your AI assistant. How can I help you today?
+                </div>
+                <span class="timestamp">12:00 PM</span>
+            </div>
+        </div>
+
+        <div class="typing-indicator" id="typing-indicator">
+            <span></span><span></span><span></span>
+        </div>
+
+        <!-- Input Area-->
+        <form class="chat-input" id="chat-form">
+            <input type="text" id="user-input" placeholder="Type a message..." autocomplete="off">
+            <button type="submit">
+                <i class="fas fa-paper-plane"></i>
+            </button>
+        </form>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+</body>
+</html>
