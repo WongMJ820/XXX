@@ -33,13 +33,7 @@ npm install
 
 ### Environment Setup
 
-Copy the example env file and fill in your keys:
-
-```bash
-cp .env.example .env
-```
-
-Or create a `.env` file in the `pocketcfo/` directory with:
+Create a `.env.local` file in the `pocketcfo/` directory with:
 
 ```env
 # Z.AI Configuration (server-side only)
@@ -67,11 +61,11 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ---
 
-## How to Use
+## Interface Overview
 
-### The 3-Panel Interface
+### The 3-Panel Main Page
 
-The app is divided into three panels:
+The primary interface is divided into three panels:
 
 #### 1. Dashboard (Left Panel)
 
@@ -95,7 +89,7 @@ Talk to your AI CFO directly:
 - **Upload a file** — Click the paperclip icon to attach a receipt, invoice, PDF, or spreadsheet (supports images, PDFs, CSVs, and Excel files)
 - **Get instant analysis** — The engine responds with compliance status, tax classification, and strategic recommendations
 
-The chat includes a typing indicator and timestamps for every message.
+The chat includes a typing indicator and timestamps for every message. If the Z.AI API is unavailable, the built-in rule engine (`engine.ts`) provides intelligent fallback responses.
 
 #### 3. Neural Decision Graph (Right Panel)
 
@@ -108,9 +102,16 @@ A visual map of how PocketCFO processes your transactions:
   - **Red (Rejected)** — Non-compliant, action required
   - **Amber (Pending)** — Needs more info or deferral recommended
 
-Animated connection lines flow between nodes, with particles traveling along the paths to show data flowing through the engine.
+Animated SVG connection lines with particle effects flow between nodes, showing data traveling through the engine pipeline. The graph updates live as new transactions are analyzed.
 
-You can scroll, pan, and zoom the graph to explore it.
+### Additional Components
+
+Beyond the main 3-panel page, PocketCFO includes these reusable components:
+
+- **Header** — Top navigation bar with PocketCFO branding, AI engine status pills (GLM-5 Online, LHDN Connected, Real-time), and notification bell with unread count
+- **Sidebar** — Full-height alternative to the Dashboard panel, featuring an animated circular compliance ring, tax bracket meter with color-coded segments, and month-to-date stat rows
+- **Tactical Feed** — A real-time scrolling feed of AI decisions, each rendered as expandable Tactical Cards with priority badges, LHDN compliance indicators, rationale blocks, and Confirm/Dismiss actions
+- **Neural Brain (React Flow)** — An interactive node-graph visualization built on React Flow (`@xyflow/react`), with custom node types (Input, Brain, Process, Decision), animated glow edges, pan/zoom controls, and a dot-grid background
 
 ---
 
@@ -145,6 +146,35 @@ Generates a strategic action with one of these outcomes:
 | **Approved** | Compliant and classified. Proceed. |
 | **Rejected** | Non-compliant (e.g., missing TIN). Do not process until fixed. |
 | **Pending** | Deferral or reclassification recommended (e.g., delay purchase to next FY). |
+
+### AI Response Structure
+
+The Z.AI engine returns a structured JSON decision:
+
+```json
+{
+  "extracted_data": {
+    "vendor": "string",
+    "amount_myr": 0,
+    "is_lhdn_compliant": true,
+    "classification": "LHDN_REVENUE_EXPENDITURE | LHDN_CAPITAL_ALLOWANCE | LHDN_ENTERTAINMENT_50PCT | LHDN_SST_EXEMPT | LHDN_PERSONAL | LHDN_UNCLASSIFIED",
+    "sst_id": "string or null",
+    "tin": "string or null",
+    "date": "ISO date string",
+    "description": "Brief description"
+  },
+  "decision_logic": {
+    "action_priority": "LOW | MEDIUM | CRITICAL",
+    "recommendation": "The Decision",
+    "rationale": "The Why — cites tax rules or cash flow",
+    "tax_optimization_impact": "RM saved or risk avoided"
+  },
+  "ui_component": {
+    "type": "TACTICAL_CARD | ALERT | OPPORTUNITY",
+    "display_message": "Concise summary for the feed"
+  }
+}
+```
 
 ---
 
@@ -200,6 +230,14 @@ Bot: Analysis: RM12,500 for laptop. Recommend classifying as Capital
      Potential savings: RM3,000.
 ```
 
+**Recurring expense auto-categorization:**
+```
+You: Internet bill RM299
+Bot: Auto-classified as Revenue Expenditure — Recurring. This is fully
+     deductible under Section 33(1) of the Income Tax Act. I've added
+     this to your monthly recurring expenses tracker.
+```
+
 ---
 
 ## Architecture
@@ -208,39 +246,85 @@ Bot: Analysis: RM12,500 for laptop. Recommend classifying as Capital
 pocketcfo/
 ├── src/
 │   ├── app/
-│   │   ├── api/analyze/route.ts    # POST endpoint — calls Z.AI
-│   │   ├── api/seed/route.ts       # Demo data seeder
-│   │   ├── page.tsx                # Main 3-panel page
-│   │   ├── layout.tsx              # Root layout + Font Awesome
-│   │   └── globals.css             # All styles
+│   │   ├── api/
+│   │   │   ├── analyze/route.ts     # POST /api/analyze — calls Z.AI GLM-5
+│   │   │   └── seed/route.ts        # GET /api/seed — populates Firestore with demo data
+│   │   ├── page.tsx                 # Main 3-panel page (Dashboard | Chat | Neural Graph)
+│   │   ├── layout.tsx               # Root layout + Font Awesome CDN
+│   │   ├── globals.css              # All styles
+│   │   └── favicon.ico
 │   ├── components/
-│   │   ├── chat/ChatPanel.tsx      # Chat interface
-│   │   ├── dashboard/              # Dashboard widgets
-│   │   ├── graph/NeuralGraph.tsx   # Neural decision visualization
-│   │   ├── neural/                 # React Flow nodes & edges (advanced)
-│   │   └── layout/                 # Header & Sidebar
+│   │   ├── chat/ChatPanel.tsx       # Chat interface with file upload
+│   │   ├── dashboard/DashboardPanel.tsx  # Dashboard widgets (compliance, tax, MTD)
+│   │   ├── graph/NeuralGraph.tsx    # SVG-based neural decision visualization
+│   │   ├── feed/
+│   │   │   ├── TacticalFeed.tsx     # Real-time scrolling decision feed
+│   │   │   ├── TacticalCard.tsx     # Expandable card with priority badge & actions
+│   │   │   └── ChatInput.tsx        # Chat input component
+│   │   ├── neural/
+│   │   │   ├── NeuralBrain.tsx      # React Flow canvas — interactive node graph
+│   │   │   ├── nodes/
+│   │   │   │   ├── BrainNode.tsx    # Central engine node
+│   │   │   │   ├── InputNode.tsx    # Document/receipt input node
+│   │   │   │   ├── ProcessNode.tsx  # Processing stage node (compliance/cashflow/tax)
+│   │   │   │   └── DecisionNode.tsx # Decision outcome node
+│   │   │   └── edges/
+│   │   │       └── GlowEdge.tsx     # Custom animated glow edge
+│   │   └── layout/
+│   │       ├── Header.tsx           # Top bar — logo, status pills, notifications
+│   │       └── Sidebar.tsx          # Side panel — company profile, health ring, tax meter
 │   ├── lib/
-│   │   ├── zai.ts                  # Z.AI client (OpenAI-compatible)
-│   │   ├── engine.ts               # Fallback rule-based engine
-│   │   ├── prompts.ts              # System prompt for Z.AI
-│   │   ├── firebase.ts             # Firebase SDK init
-│   │   ├── firestore.ts            # Firestore read/write
-│   │   ├── mock-data.ts            # Demo company & feed data
-│   │   └── types.ts                # TypeScript interfaces
+│   │   ├── zai.ts                   # Z.AI client (OpenAI-compatible SDK)
+│   │   ├── engine.ts                # Fallback rule-based engine (5 scenarios)
+│   │   ├── prompts.ts               # System prompt + context template for Z.AI
+│   │   ├── firebase.ts              # Firebase SDK init (Auth, Firestore, Storage)
+│   │   ├── firestore.ts             # Firestore CRUD — profiles, invoices, tactical feed, health
+│   │   ├── mock-data.ts             # Demo company, health snapshot, and 5 seed feed items
+│   │   └── types.ts                 # TypeScript interfaces (PocketCFODecision, Invoice, etc.)
 │   └── types/
-│       └── index.ts                # Shared UI types
+│       └── index.ts                 # Shared UI types (ChatMessage, DashboardData, GraphInput/Outcome)
 ```
 
 ### Tech Stack
 
 | Layer | Technology |
 |---|---|
-| Framework | Next.js 16 (App Router) |
-| AI Engine | Z.AI GLM-5.1 via OpenAI-compatible SDK |
-| Database | Firebase Firestore (optional) |
-| Visualization | React Flow (@xyflow/react) + custom SVG |
+| Framework | Next.js 16.2 (App Router) |
+| AI Engine | Z.AI GLM-5 via OpenAI-compatible SDK (`openai` v6) |
+| Database | Firebase Firestore (optional — real-time sync, Auth, Storage) |
+| Visualization | React Flow (`@xyflow/react` v12) + custom SVG |
+| Animation | Framer Motion v12 |
 | Icons | Lucide React + Font Awesome 6 |
 | Styling | Tailwind CSS 4 + custom CSS |
+
+---
+
+## Firestore Data Model
+
+When Firebase is configured, PocketCFO persists data across four collections:
+
+| Collection | Purpose | Key Fields |
+|---|---|---|
+| `users` | Company profiles | name, sstId, tin, taxYear, annualRevenue, currentTaxBracket |
+| `invoices` | Uploaded invoices | rawInput, inputType, isProcessed, lhdnStatus, extractedData |
+| `tactical_feed` | AI decision feed (real-time) | extracted_data, decision_logic, ui_component, status |
+| `financial_health` | Financial snapshots | liquidityRatio, monthToDateRevenue, expenses, complianceRate |
+
+The tactical feed supports real-time updates via Firestore `onSnapshot` subscriptions, and items can be confirmed or dismissed through the UI.
+
+---
+
+## Fallback Rule Engine
+
+If the Z.AI API is unavailable, the built-in rule engine (`engine.ts`) handles these scenarios:
+
+1. **Compliant transactions with valid TIN** — Auto-classifies as Capital Allowance, Revenue Expenditure, or Entertainment based on keywords
+2. **Non-compliant invoices missing TIN** — Flags as NON-COMPLIANT with penalty risk (RM5,000–RM20,000)
+3. **Capital expenditure questions** — Recommends Capital Allowance classification with bracket deferral advice
+4. **Recurring expenses** (internet, electricity, rent, subscriptions) — Auto-categorizes as Revenue Expenditure — Recurring
+5. **General fallback** — Records transaction and prompts for more details if amount/vendor is missing
+
+The fallback engine also updates the dashboard state and neural graph in real time.
 
 ---
 
@@ -253,15 +337,16 @@ The app ships with demo data for **Warung Pixel Sdn Bhd** — a fictional Malays
 - **Annual Revenue:** RM520,000
 - **Current Tax Bracket:** 17%
 - **Compliance Score:** 94%
+- **Liquidity Ratio:** 1.8x
 
-Pre-loaded transactions include an IKEA furniture purchase, a Pelita invoice missing TIN, and a Dell laptop purchase that should be deferred.
+Pre-loaded tactical feed items include:
+1. **IKEA Damansara** (RM7,850) — Opportunity to reclassify as Capital Allowance, save RM1,884
+2. **Nasi Kandar Pelita** (RM485.60) — CRITICAL: Missing TIN, non-compliant, RM20,000 penalty risk
+3. **TIME Internet** (RM299) — Auto-classified as recurring Revenue Expenditure, fully deductible
+4. **Petronas Mesra** (RM180) — Fuel trending 15% over budget, expenses at 79.9% of revenue
+5. **Dell Technologies** (RM12,500) — CRITICAL: Delay purchase to May, save RM3,000 and preserve liquidity
 
-If the Z.AI API is unavailable, the built-in rule engine (`engine.ts`) handles these scenarios:
-- Compliant transactions with valid TIN
-- Non-compliant invoices missing TIN
-- Capital expenditure classification
-- Recurring expense auto-categorization
-- General expense tracking
+Use `GET /api/seed` to populate Firestore with this demo data.
 
 ---
 
@@ -269,11 +354,12 @@ If the Z.AI API is unavailable, the built-in rule engine (`engine.ts`) handles t
 
 | Issue | Fix |
 |---|---|
-| "Z.AI API key not configured" | Add `ZAI_API_KEY` to your `.env` file |
+| "Z.AI API key not configured" | Add `ZAI_API_KEY` to your `.env.local` file |
 | Chat responses seem generic | The fallback engine is running. Check that your Z.AI key is valid |
 | Neural graph lines not showing | Resize the browser window — lines are drawn based on DOM positions |
 | Firebase errors in console | Safe to ignore if you're using demo mode. Add Firebase env vars to enable persistence |
 | Build fails with EBUSY | Delete the `.next` folder and run `npm run build` again (OneDrive file lock issue) |
+| 502 "AI returned invalid JSON" | The Z.AI response didn't match the expected schema. Check the model is `glm-5` and `response_format: json_object` is supported |
 
 ---
 
