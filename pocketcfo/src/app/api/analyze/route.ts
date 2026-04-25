@@ -45,9 +45,11 @@ export async function POST(req: NextRequest) {
 
     const userMessage = CONTEXT_TEMPLATE(companyContext, rawInput);
 
+    console.log("[PocketCFO] Calling Z.AI with input:", rawInput.substring(0, 50) + "...");
+
     // Call Z.AI GLM-5
     const completion = await zai.chat.completions.create({
-      model: "ilmu-glm-5.1",
+      model: "glm-5",
       messages: [
         { role: "system", content: POCKETCFO_SYSTEM_PROMPT },
         { role: "user", content: userMessage },
@@ -57,6 +59,7 @@ export async function POST(req: NextRequest) {
     });
 
     const responseContent = completion.choices[0]?.message?.content;
+    console.log("[PocketCFO] Z.AI Response received:", responseContent);
 
     if (!responseContent) {
       return NextResponse.json(
@@ -65,24 +68,31 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const aiDecision: PocketCFODecision = JSON.parse(responseContent);
+    try {
+      const aiDecision: PocketCFODecision = JSON.parse(responseContent);
 
-    // Return decision to the client — client will write to Firestore
-    // (We write from client-side to leverage real-time onSnapshot)
-    return NextResponse.json({
-      success: true,
-      decision: aiDecision,
-      timestamp: new Date().toISOString(),
-    });
-  } catch (error) {
+      return NextResponse.json({
+        success: true,
+        decision: aiDecision,
+        timestamp: new Date().toISOString(),
+      });
+    } catch (parseError) {
+      console.error("[PocketCFO] JSON Parse Error:", parseError, "Content:", responseContent);
+      return NextResponse.json(
+        { error: "AI returned invalid JSON format" },
+        { status: 502 }
+      );
+    }
+  } catch (error: any) {
     console.error("[PocketCFO] Decision Engine Error:", error);
-
-    const message =
-      error instanceof Error ? error.message : "Unknown error occurred";
+    
+    // Check for specific API errors
+    const status = error?.status || 500;
+    const message = error?.message || "Unknown error occurred";
 
     return NextResponse.json(
-      { error: `Decision engine failed: ${message}` },
-      { status: 500 }
+      { error: `Decision engine failed (${status}): ${message}` },
+      { status: status >= 400 && status < 600 ? status : 500 }
     );
   }
 }
