@@ -4,6 +4,11 @@ Your neural financial strategist that navigates LHDN e-Invoicing mandates, optim
 
 ---
 
+## PocketCFO Picthing Video
+https://drive.google.com/drive/folders/12513OPFydRoJ3_yM_NA_NXWFDxDu5dL0?usp=sharing
+
+---
+
 ## What is PocketCFO?
 
 PocketCFO is an AI-powered financial decision engine built for Malaysian SMEs. It acts as your virtual CFO, analyzing every transaction against LHDN compliance rules and Malaysian tax law to give you instant, actionable recommendations.
