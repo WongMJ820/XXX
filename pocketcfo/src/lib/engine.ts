@@ -195,6 +195,12 @@ export function getDemoResponse(
       newDashboard: {
         ...currentDashboard,
         expenses: currentDashboard.expenses + (amount || 299),
+        liquidity: Number(
+          (
+            currentDashboard.revenue /
+            (currentDashboard.expenses + (amount || 299))
+          ).toFixed(1)
+        ),
       },
     };
   }
@@ -237,6 +243,9 @@ export function getDemoResponse(
       expenses: currentDashboard.expenses + amount,
       pending:
         amount > 0 ? currentDashboard.pending + 1 : currentDashboard.pending,
+      liquidity: Number(
+        (currentDashboard.revenue / (currentDashboard.expenses + amount)).toFixed(1)
+      ),
     },
   };
 }

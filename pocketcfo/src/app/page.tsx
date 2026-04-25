@@ -119,19 +119,24 @@ export default function Home() {
 
         // Update dashboard based on AI response
         if (decision?.extracted_data) {
-          const newExpenses = dashboard.expenses + (decision.extracted_data.amount_myr || 0);
-          const newCompliance = decision.extracted_data.is_lhdn_compliant
-            ? dashboard.compliance
-            : Math.max(dashboard.compliance - 12, 0);
-          const newPending = dashboard.pending + 1;
+          const expenseAmount = decision.extracted_data.amount_myr || 0;
+          const isCompliant = decision.extracted_data.is_lhdn_compliant;
 
-          setDashboard((prev) => ({
-            ...prev,
-            expenses: newExpenses,
-            pending: newPending,
-            compliance: newCompliance,
-            liquidity: Number((prev.revenue / newExpenses).toFixed(1)),
-          }));
+          setDashboard((prev) => {
+            const newExpenses = prev.expenses + expenseAmount;
+            const newCompliance = isCompliant
+              ? prev.compliance
+              : Math.max(prev.compliance - 12, 0);
+            const newPending = prev.pending + 1;
+
+            return {
+              ...prev,
+              expenses: newExpenses,
+              pending: newPending,
+              compliance: newCompliance,
+              liquidity: Number((prev.revenue / newExpenses).toFixed(1)),
+            };
+          });
         }
       } else {
         // API error — smart demo fallback
