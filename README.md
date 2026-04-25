@@ -365,4 +365,4 @@ Use `GET /api/seed` to populate Firestore with this demo data.
 
 ## License
 
-Built for the UM Hackathon 2026.
+Built for the UM Hackathon 2026 by XXX.
